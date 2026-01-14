@@ -5,12 +5,22 @@ import { firstValueFrom } from 'rxjs';
 
 export const serverRoutes: ServerRoute[] = [
   {
+    path: 'pokemons/page/:page',
+    renderMode: RenderMode.Prerender,
+    async getPrerenderParams() {
+      const pokemonsService = inject(PokemonsService);
+      const pokemonIds = await firstValueFrom(pokemonsService.getPokemonsForSSRPrerender());
+      return pokemonsService.getPagesPokemonObject(pokemonIds);
+    },
+    fallback: PrerenderFallback.Server
+  },
+  {
     path: 'pokemon/:id',
     renderMode: RenderMode.Prerender,
     async getPrerenderParams() {
       const pokemonsService = inject(PokemonsService);
-      const pokemonIds = await firstValueFrom(pokemonsService.getPokemonIds());
-      return pokemonsService.getSimplePokemonObject(pokemonIds);
+      const pokemonIds = await firstValueFrom(pokemonsService.getPokemonsForSSRPrerender());
+      return pokemonsService.getPagePokemonObject(pokemonIds);
     },
     fallback: PrerenderFallback.Server
   },

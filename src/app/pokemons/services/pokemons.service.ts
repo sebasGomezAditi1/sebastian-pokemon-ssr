@@ -16,7 +16,10 @@ export class PokemonsService {
     return this.http.get<PokeAPIResponse>(`https://pokeapi.co/api/v2/pokemon?offset=${page * 20}&limit=20`)
     .pipe(
       map((resp) => {
-        const simplePokemons = this.getSimplePokemonObject(resp)
+        const simplePokemons = resp.results.map((pokemon) => ({
+          id: pokemon.url.split('/').at(-2) ?? '',
+          name: pokemon.name
+        }))
         return simplePokemons;
       })
     )
@@ -26,14 +29,23 @@ export class PokemonsService {
     return this.http.get<Pokemon>(`https://pokeapi.co/api/v2/pokemon/${id}`);
   }
 
-  public getSimplePokemonObject(pokemons: PokeAPIResponse) {
+  public getPagesPokemonObject(pokemons: PokeAPIResponse) {
+    const pokemonCount = pokemons.count / 20;
+    const pokemonPages = [];
+    for(let i = 1; i < pokemonCount; i++) {
+      pokemonPages.push({ page: i.toString() });
+    }
+    return pokemonPages;
+  }
+
+  public getPagePokemonObject(pokemons: PokeAPIResponse) {
     return pokemons.results.map((pokemon) => ({
-      id: pokemon.url.split('/').at(-2) ?? '',
-      name: pokemon.name
+      number: pokemon.url.split('/').at(-2) ?? '',
+      id: pokemon.name
     }))
   }
 
-  public getPokemonIds() {
+  public getPokemonsForSSRPrerender() {
     return this.http.get<PokeAPIResponse>(`https://pokeapi.co/api/v2/pokemon`);
   }
 }
